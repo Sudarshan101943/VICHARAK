@@ -121,6 +121,22 @@ module CPU(
 
   //  Instruction Decode Stage
   always @(posedge clk) begin
+    if(reset)
+      begin
+    Decode_PC          <= 0;
+    Decode_instruction <= 19'b0;
+    Decode_instr       <= 3'b0;
+    Decode_opcode      <= 3'b0;
+
+    
+    Decode_reg1        <= 4'b0;
+    Decode_reg2        <= 4'b0;
+    Decode_rd          <= 4'b0;
+    Decode_offset      <= 4'b0;      // used for base+offset
+    Decode_imm8        <= 8'b0; 
+      end
+    else
+      begin
     Decode_PC          <= Fetch_PC;
     Decode_instruction <= Fetch_instr;
     Decode_instr       <= Fetch_instr[18:16];
@@ -133,10 +149,23 @@ module CPU(
     Decode_offset      <= Fetch_instr[3:0];      // used for base+offset
     Decode_imm8        <= Fetch_instr[7:0];      // used for branches
   end
-
+  end
   // EXecute and ALU Stage) 
   always @(posedge clk) begin
-   
+    if(reset)
+      begin
+    Execute_instr   <= 3'b0;
+    Execute_opcode  <= 3'b0;
+    Execute_reg1    <= 4'b0;
+    Execute_reg2    <= 4'b0;
+    Execute_rd      <= 4'b0;
+    Execute_offset  <= 4'b0;
+    Execute_imm8    <= 7'b0;
+    Execute_PC      <= 0;
+
+      end
+    else
+      begin
     Execute_instr   <= Decode_instr;
     Execute_opcode  <= Decode_opcode;
     Execute_reg1    <= Decode_reg1;
@@ -157,12 +186,15 @@ module CPU(
                         (Decode_instr == custom_instr) ||
                         (Decode_instr == control_flow_instr && Decode_opcode == CALL);
   end
-
+  end
   // === ALU / EXecute Operations ===
   always @(posedge clk) begin
-  
+    if(reset)
+      begin
     ALU_Result <= 32'd0;
-
+      end
+    else
+      begin
     case (Execute_instr)
 
       // Arithmetic Operations/////
@@ -240,7 +272,8 @@ module CPU(
       end
     endcase
   end
-
+  end
+  
   //  MEM Acess Stage 
   
   
